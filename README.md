@@ -24,10 +24,11 @@
 1. 계정을 운영하는 환경의 권한을 획득한다.
 2. AWS 계정의 IAM User 리스트를 만든다.
 3. 생성한 IAM User들 중 발급한 Active AccessKey가 90일 이상된 AccessKey 리스트를 만든다.
-4. 90일 이상된 AccessKey를 비활성화 한다.
-5. 90일 이상된 AccessKey를 삭제 한다.
-6. 삭제 내역을 Slack를 통해 관리자에게 알린다.
-7. AWS EventBridge에 등록된 스케줄을 통해 매일 (UTC)00:00:00에 Application이 구동된다.
+4. 생성한 IAM User들의 콘솔 접근 패스워드가 90일지났는지 여부를 체크하고 리스트를 만든다.
+5. 90일 이상된 AccessKey를 비활성화 한다.(미적용)
+6. 90일 이상된 AccessKey를 삭제 한다.(미적용)
+7. 체크 내역을 Webhook를 통해 관리자에게 알린다.(메신저는 Dooray 활용)
+8. AWS EventBridge에 등록된 스케줄을 통해 매일 (UTC)00:00:00에 Application이 구동된다.
 
 > # Application install
 ### 개발환경
