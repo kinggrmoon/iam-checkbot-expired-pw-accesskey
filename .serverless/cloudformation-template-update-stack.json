@@ -1,0 +1,285 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessDeploymentBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ServerlessDeploymentBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "FuncLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/management-dooray-bot-accessKeyChecker-dev-func"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "management-dooray-bot-accessKeyChecker",
+                  "dev",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/management-dooray-bot-accessKeyChecker-dev*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/management-dooray-bot-accessKeyChecker-dev*:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:GenerateCredentialReport",
+                    "iam:GenerateServiceLastAccessedDetails",
+                    "iam:Get*",
+                    "iam:List*",
+                    "iam:SimulateCustomPolicy",
+                    "iam:SimulatePrincipalPolicy"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:DeleteAccessKey",
+                    "iam:UpdateAccessKey"
+                  ],
+                  "Resource": "arn:aws:iam::175816075786:user/*"
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": "management-dooray-bot-accessKeyChecker-dev-role"
+      }
+    },
+    "FuncLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/management-dooray-bot-accessKeyChecker/dev/1636943302932-2021-11-15T02:28:22.932Z/management-dooray-bot-accessKeyChecker.zip"
+        },
+        "Handler": "handler.handler",
+        "Runtime": "python3.8",
+        "FunctionName": "management-dooray-bot-accessKeyChecker-dev-func",
+        "MemorySize": 512,
+        "Timeout": 600,
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": "management"
+          },
+          {
+            "Key": "Service",
+            "Value": "dooray-bot"
+          },
+          {
+            "Key": "Role",
+            "Value": "serverless"
+          },
+          {
+            "Key": "Owner",
+            "Value": "grmoon"
+          },
+          {
+            "Key": "Project",
+            "Value": "easyshopping"
+          }
+        ],
+        "Environment": {
+          "Variables": {
+            "dooraywebhookurl": "https://hook.dooray.com/services/2509989958368058757/3135416140852444199/lSpCt_mvSQqMAxuY6lLz0A"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "FuncLogGroup"
+      ]
+    },
+    "FuncLambdaVersionwzUwbFPPIO9mK5DaQ4AuSJFX2HgSVmAJKYJBlYD07QA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "FuncLambdaFunction"
+        },
+        "CodeSha256": "y2RjlrL5rUAbO4Orw7niiSW6mAwQ4KQb+7V21hk6aE8="
+      }
+    },
+    "FuncEventsRuleSchedule1": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "ScheduleExpression": "cron(00 00 ? * MON *)",
+        "State": "ENABLED",
+        "Name": "management-dooray-bot-accessKeyChecker-scheduled-eventbridge",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "FuncLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Id": "funcSchedule"
+          }
+        ]
+      }
+    },
+    "FuncLambdaPermissionEventsRuleSchedule1": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "FuncLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "FuncEventsRuleSchedule1",
+            "Arn"
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      },
+      "Export": {
+        "Name": "sls-management-dooray-bot-accessKeyChecker-dev-ServerlessDeploymentBucketName"
+      }
+    },
+    "FuncLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "FuncLambdaVersionwzUwbFPPIO9mK5DaQ4AuSJFX2HgSVmAJKYJBlYD07QA"
+      },
+      "Export": {
+        "Name": "sls-management-dooray-bot-accessKeyChecker-dev-FuncLambdaFunctionQualifiedArn"
+      }
+    }
+  }
+}
