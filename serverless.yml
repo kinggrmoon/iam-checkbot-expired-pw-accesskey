@@ -1,0 +1,63 @@
+service: ${self:custom.servicename}
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+custom:
+#  application: management-dooray-bot-accessKeyChecker-app
+  servicename: iam-checkbot-expired-pw-accesskey
+  currentStage: ${opt:stage, 'dev'}
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: python3.8
+  lambdaHashingVersion: 20201221
+  # optional, in MB, default is 1024
+  memorySize: 512 
+  # optional, in seconds, default is 6      
+  timeout: 600           
+# you can overwrite defaults here
+  stage: dev
+  region: ap-northeast-2
+  # make role and policy(Inline policy)
+  iam:
+    role:
+      name: iam-checkbot-expired-pw-accesskey-${self:custom.currentStage}-role
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "iam:GenerateCredentialReport"
+            - "iam:GenerateServiceLastAccessedDetails"
+            - "iam:Get*"
+            - "iam:List*"
+            - "iam:SimulateCustomPolicy"
+            - "iam:SimulatePrincipalPolicy"
+          Resource: "*"
+        - Effect: "Allow"
+          Action:
+            - "iam:DeleteAccessKey"
+            - "iam:UpdateAccessKey"
+          Resource:
+            - "arn:aws:iam::{USERCODE}:user/*"
+  tags:
+    Application: "{Application}"
+    Service: "{Service}"
+    Role: "{Role}"
+    Owner: "{Owner}"
+    Project: "{Project}"
+functions:
+  func:
+    handler: handler.handler
+    environment: # Function level environment variables
+      dooraywebhookurl: "https://hook.dooray.com/services/****************************************"
+    events:
+      - schedule:
+          name: iam-checkbot-expired-pw-accesskey-scheduled-eventbridge
+          rate: cron(00 00 ? * MON *) #UTC
+          enabled: true
+# you can add CloudFormation resource templates here
+#resources:
