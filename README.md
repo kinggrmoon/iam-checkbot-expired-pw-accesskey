@@ -29,7 +29,7 @@
 6. 90일 이상된 AccessKey를 삭제 한다.(미적용)
 7. 체크 내역을 Webhook를 통해 관리자에게 알린다.(메신저는 Dooray 활용)
 8. AWS EventBridge에 등록된 스케줄을 통해 매일 (UTC)00:00:00에 Application이 구동된다.
-
+  
 > # Application install
 ### 개발환경
 - OS: macOS
